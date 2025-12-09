@@ -1,4 +1,3 @@
-// internal/kafka/kafkago_producer.go
 package kafka
 
 import (
@@ -9,7 +8,6 @@ import (
 
 type KafkaGoProducerConfig struct {
 	Brokers []string
-	// İstersen default topic vs. ekleyebilirsin
 }
 
 type KafkaGoProducer struct {
@@ -29,7 +27,7 @@ func NewKafkaGoProducer(cfg KafkaGoProducerConfig) *KafkaGoProducer {
 func (p *KafkaGoProducer) Send(ctx context.Context, msg Message) error {
 	return p.w.WriteMessages(ctx, kafkago.Message{
 		Topic:     msg.Topic,
-		Partition: msg.Partition, // genelde 0 bırakılır, balancer seçer
+		Partition: msg.Partition,
 		Key:       msg.Key,
 		Value:     msg.Value,
 		Time:      msg.Timestamp,

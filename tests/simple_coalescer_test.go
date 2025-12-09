@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cihan-sahin/cdc-gateway/internal/pipeline"
 	"github.com/cihan-sahin/cdc-gateway/internal/policy"
 	"github.com/cihan-sahin/cdc-gateway/pkg/cdcmodel"
-	"github.com/cihan-sahin/cdc-gateway/internal/pipeline"
 )
 
 func TestSimpleCoalescer_LastStateFlushByWindow(t *testing.T) {
@@ -108,8 +108,8 @@ func TestSimpleCoalescer_MicroBatch_FlushByWindow(t *testing.T) {
 	pol := policy.Policy{
 		Table:         "db.public.logs",
 		Mode:          policy.ModeMicroBatch,
-		WindowMs:      100, // 100ms window
-		MaxBatchSize:  0,   // batch size limiti yok, sadece window'a bak
+		WindowMs:      100,
+		MaxBatchSize:  0,
 		MergeStrategy: policy.MergeReplace,
 		TargetTopic:   "logs.batched",
 		Enabled:       true,

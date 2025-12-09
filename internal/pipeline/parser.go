@@ -29,7 +29,6 @@ func ParseDebeziumMessage(msg kafka.Message) (cdcmodel.CDCEvent, error) {
 	op := cdcmodel.Operation(env.Payload.Op)
 	fullTable := fmt.Sprintf("%s.%s.%s", env.Payload.Source.DB, env.Payload.Source.Schema, env.Payload.Source.Table)
 
-	// Key'i Kafka message key'den alıyoruz.
 	key := string(msg.Key)
 
 	return cdcmodel.CDCEvent{
@@ -37,6 +36,6 @@ func ParseDebeziumMessage(msg kafka.Message) (cdcmodel.CDCEvent, error) {
 		Table:       fullTable,
 		Op:          op,
 		SourceTopic: msg.Topic,
-		Payload:     env.Payload.After, // şimdilik "after" ile çalışıyoruz
+		Payload:     env.Payload.After,
 	}, nil
 }

@@ -27,10 +27,8 @@ type bufferedBatch struct {
 type SimpleCoalescer struct {
 	mu sync.Mutex
 
-	// last_state buffer'ları: partition -> key -> event
 	lastStateBuffers map[int32]map[string]*bufferedEvent
 
-	// micro_batch buffer'ları: partition -> table -> batch
 	batchBuffers map[int32]map[string]*bufferedBatch
 }
 
@@ -54,7 +52,6 @@ func (c *SimpleCoalescer) AddEvent(
 
 	switch pol.Mode {
 	case policy.ModePassThrough:
-		// Hiç buffer tutma, direkt flush edilmesi için döndür
 		return []CoalescedResult{
 			{
 				Events:       []cdcmodel.CDCEvent{evt},
@@ -72,7 +69,6 @@ func (c *SimpleCoalescer) AddEvent(
 		return c.addMicroBatch(evt, pol, partition, now)
 
 	default:
-		// Tanınmayan mode → passthrough
 		return []CoalescedResult{
 			{
 				Events:       []cdcmodel.CDCEvent{evt},
@@ -100,7 +96,6 @@ func (c *SimpleCoalescer) addLastState(
 
 	k := bufferKey(evt)
 	if existing, ok := c.lastStateBuffers[partition][k]; ok {
-		// merge_strategy'ye göre yeni event'i oluştur
 		merged := MergeEvent(existing.event, evt, pol.MergeStrategy)
 		existing.event = merged
 		existing.lastUpdated = now
@@ -113,7 +108,6 @@ func (c *SimpleCoalescer) addLastState(
 		}
 	}
 
-	// last_state için flush zaman bazlı yapılacak, burada dönmüyoruz
 	return nil, nil
 }
 
@@ -146,7 +140,6 @@ func (c *SimpleCoalescer) addMicroBatch(
 	batch.events = append(batch.events, evt)
 	batch.lastUpdated = now
 
-	// Eğer max_batch_size konmuşsa ve doldurduysak hemen flush edelim
 	if pol.MaxBatchSize > 0 && len(batch.events) >= pol.MaxBatchSize {
 		res := CoalescedResult{
 			Events:       batch.events,
@@ -155,13 +148,11 @@ func (c *SimpleCoalescer) addMicroBatch(
 			FlushedAt:    now,
 			WindowOpened: batch.firstEventAt,
 		}
-		// batch'i sıfırla
 		batch.events = nil
 		batch.firstEventAt = now
 		return []CoalescedResult{res}, nil
 	}
 
-	// Aksi halde FlushDue zamanında kontrol edilecek
 	return nil, nil
 }
 
@@ -178,7 +169,6 @@ func (c *SimpleCoalescer) FlushDue(now time.Time) ([]CoalescedResult, error) {
 
 	var results []CoalescedResult
 
-	// LAST_STATE için: window_ms'e göre flush
 	for partition, buf := range c.lastStateBuffers {
 		for k, be := range buf {
 			win := time.Duration(be.policy.WindowMs) * time.Millisecond
@@ -198,7 +188,6 @@ func (c *SimpleCoalescer) FlushDue(now time.Time) ([]CoalescedResult, error) {
 		}
 	}
 
-	// MICRO_BATCH için: window_ms'e göre flush
 	for partition, tableBuf := range c.batchBuffers {
 		for table, batch := range tableBuf {
 			if len(batch.events) == 0 {
@@ -216,12 +205,9 @@ func (c *SimpleCoalescer) FlushDue(now time.Time) ([]CoalescedResult, error) {
 					FlushedAt:    now,
 					WindowOpened: batch.firstEventAt,
 				})
-				// batch temizle
 				batch.events = nil
 				batch.firstEventAt = now
-				// istersen map'ten tamamen silebilirsin:
-				// delete(tableBuf, table)
-				_ = table // sadece örnek
+				_ = table
 			}
 		}
 	}

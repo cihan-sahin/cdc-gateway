@@ -49,7 +49,6 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("unmarshal yaml: %w", err)
 	}
 
-	// basit validasyon
 	if cfg.App.HTTPAddr == "" {
 		cfg.App.HTTPAddr = ":8080"
 	}

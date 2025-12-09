@@ -135,7 +135,6 @@ func (x *ListPoliciesRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListPoliciesRequest.ProtoReflect.Descriptor instead.
 func (*ListPoliciesRequest) Descriptor() ([]byte, []int) {
 	return file_proto_cdcgateway_v1_policy_proto_rawDescGZIP(), []int{1}
 }

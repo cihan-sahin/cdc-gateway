@@ -15,13 +15,8 @@ type CoalescedResult struct {
 	WindowOpened time.Time
 }
 
-// Her partition için bir coalescer instance'ı olacak.
 type Coalescer interface {
-	// Yeni event geldiğinde çağrılır.
-	// Gerekirse sadece buffer'a koyar; flush zamanı gelmişse
-	// dönen slice'te flush edilmesi gereken eventler olur.
 	AddEvent(evt cdcmodel.CDCEvent, pol policy.Policy, partition int32, now time.Time) ([]CoalescedResult, error)
 
-	// Zaman bazlı flush için (örn. her 100ms tick).
 	FlushDue(now time.Time) ([]CoalescedResult, error)
 }

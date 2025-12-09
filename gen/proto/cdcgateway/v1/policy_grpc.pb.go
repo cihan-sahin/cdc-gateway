@@ -7,7 +7,6 @@ import (
 	status "google.golang.org/grpc/status"
 )
 
-
 const _ = grpc.SupportPackageIsVersion9
 
 const (
@@ -15,7 +14,6 @@ const (
 	PolicyService_UpsertPolicy_FullMethodName = "/cdcgateway.v1.PolicyService/UpsertPolicy"
 	PolicyService_DeletePolicy_FullMethodName = "/cdcgateway.v1.PolicyService/DeletePolicy"
 )
-
 
 type PolicyServiceClient interface {
 	ListPolicies(ctx context.Context, in *ListPoliciesRequest, opts ...grpc.CallOption) (*ListPoliciesResponse, error)

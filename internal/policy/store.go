@@ -70,7 +70,7 @@ func rawToPolicy(rp struct {
 	for _, rc := range rp.Conditions {
 		field, _ := rc["field"].(string)
 		opStr, _ := rc["op"].(string)
-		val, _ := rc["value"]
+		val := rc["value"]
 
 		if field == "" || opStr == "" {
 			continue

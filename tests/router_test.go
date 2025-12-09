@@ -32,7 +32,6 @@ func TestSimpleCoalescer_LastStateFlush(t *testing.T) {
 		},
 	}
 
-	// AddEvent sadece buffer'a koyacak
 	results, err := c.AddEvent(evt1, pol, 0, now)
 	if err != nil {
 		t.Fatalf("AddEvent error: %v", err)
@@ -41,7 +40,6 @@ func TestSimpleCoalescer_LastStateFlush(t *testing.T) {
 		t.Fatalf("expected no immediate flush for last_state, got %d", len(results))
 	}
 
-	// 200ms sonra FlushDue çağır
 	later := now.Add(200 * time.Millisecond)
 	results, err = c.FlushDue(later)
 	if err != nil {

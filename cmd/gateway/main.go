@@ -59,7 +59,6 @@ func (a *App) StartHTTP(ctx context.Context) *http.Server {
 		w.Header().Set("Content-Type", "application/json")
 
 		pols := a.policy.All()
-		// hızlıca marshal etmek için std json kullanalım
 		type respPolicy struct {
 			Table         string      `json:"table"`
 			Mode          string      `json:"mode"`
@@ -123,7 +122,6 @@ func jsonMarshal(v interface{}) ([]byte, error) {
 }
 
 func main() {
-	// config path env'den okunabilir
 	configPath := os.Getenv("CDC_GATEWAY_CONFIG")
 	if configPath == "" {
 		configPath = "config.yaml"
@@ -144,7 +142,6 @@ func main() {
 
 	app := NewApp(cfg, policyStore, m, reg)
 
-	// SIGINT/SIGTERM yakalayalım
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 

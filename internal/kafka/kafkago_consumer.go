@@ -1,4 +1,3 @@
-// internal/kafka/kafkago_consumer.go
 package kafka
 
 import (
@@ -66,7 +65,6 @@ func (c *KafkaGoConsumer) Consume(ctx context.Context, handler func(ctx context.
 		}
 
 		if err := handler(ctx, msg); err != nil {
-			// Şimdilik: logla ve devam et.
 			log.Printf("handler error (partition=%d offset=%d): %v", m.Partition, m.Offset, err)
 		}
 	}

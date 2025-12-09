@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package cdcgateway.v1;
 
-// BURASI: Go kodu hangi module path'e ait olacak?
-// go.mod'daki module ile aynı prefix olmalı:
 option go_package = "github.com/cihan-sahin/cdc-gateway/gen/cdcgateway/v1;cdcv1";
 
 service PolicyService {

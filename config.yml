@@ -8,7 +8,6 @@ kafka:
     - "localhost:9092"
   input_topic: "dbserver1.inventory.customers"
   consumer_group: "cdc-gateway-dev"
-  # ileride ekleriz: sasl, tls vs.
 
 policies:
   - table: "inventory.customers"
@@ -35,7 +34,7 @@ policies:
     mode: "micro_batch"
     window_ms: 200
     max_batch_size: 20
-    merge_strategy: "replace"    # micro_batch'te şu an kullanılmıyor ama future-proof
+    merge_strategy: "replace"
     target_topic: "inventory.device_metrics.batched"
     enabled: true
     conditions:

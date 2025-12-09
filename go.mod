@@ -3,7 +3,7 @@ module github.com/cihan-sahin/cdc-gateway
 go 1.24.0
 
 require (
-	github.com/prometheus/client_golang v1.23.2 // örnek versiyon
+	github.com/prometheus/client_golang v1.23.2
 	gopkg.in/yaml.v3 v3.0.1
 )
 

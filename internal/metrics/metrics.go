@@ -61,7 +61,6 @@ func (m *GatewayMetrics) IncEventsOut(n int64) {
 	}
 }
 
-// Flush edilen batch için ekstra metrikler
 func (m *GatewayMetrics) ObserveBatch(size int, windowOpened, flushedAt time.Time) {
 	if m.batchSizeHist != nil && size > 0 {
 		m.batchSizeHist.Observe(float64(size))

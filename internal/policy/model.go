@@ -37,7 +37,6 @@ type Condition struct {
 	Value interface{} `json:"value,omitempty" yaml:"value,omitempty"`
 }
 
-// Policy: hangi tabloya, nasıl davranacağımızı tanımlar
 type Policy struct {
 	Table         string        `json:"table" yaml:"table"`
 	Mode          Mode          `json:"mode" yaml:"mode"`
@@ -49,7 +48,6 @@ type Policy struct {
 	Enabled       bool          `json:"enabled" yaml:"enabled"`
 }
 
-// PolicySet: table -> policy map
 type PolicySet struct {
 	ByTable map[string]Policy
 }

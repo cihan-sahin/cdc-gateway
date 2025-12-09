@@ -31,7 +31,6 @@ func NewEngine(consumer kafka.Consumer, producer kafka.Producer, router *Router,
 }
 
 func (e *Engine) Run(ctx context.Context) error {
-	// Flush ticker: periyodik olarak buffer'ı kontrol et
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -53,7 +52,6 @@ func (e *Engine) Run(ctx context.Context) error {
 		}
 	}()
 
-	// Consumer loop
 	return e.consumer.Consume(ctx, e.handleMessage)
 }
 
@@ -63,12 +61,11 @@ func (e *Engine) handleMessage(ctx context.Context, msg kafka.Message) error {
 	evt, err := ParseDebeziumMessage(msg)
 	if err != nil {
 		log.Printf("parse debezium error: %v", err)
-		return nil // drop, ama istersen DLQ yaparız
+		return nil
 	}
 
 	routed, ok := e.router.Route(evt)
 	if !ok {
-		// Policy yok veya conditions uyuşmadı → raw event'i passthrough gibi davranalım
 		return e.sendRaw(ctx, evt)
 	}
 
@@ -90,7 +87,6 @@ func (e *Engine) handleMessage(ctx context.Context, msg kafka.Message) error {
 
 func (e *Engine) handleResults(ctx context.Context, results []CoalescedResult) error {
 	for _, res := range results {
-		// Prometheus’a batch metriklerini yaz
 		e.metrics.ObserveBatch(len(res.Events), res.WindowOpened, res.FlushedAt)
 
 		switch res.Policy.Mode {
@@ -112,8 +108,6 @@ func (e *Engine) handleResults(ctx context.Context, results []CoalescedResult) e
 }
 
 func (e *Engine) sendRaw(ctx context.Context, evt cdcmodel.CDCEvent) error {
-	// Raw event'i, istersen aynı topic'e veya ayrı "raw" topic'e basabilirsin.
-	// Şimdilik: orijinal topic'e JSON serialize ederek atalım.
 	b, err := json.Marshal(evt)
 	if err != nil {
 		return err
@@ -132,7 +126,6 @@ func (e *Engine) sendCoalesced(ctx context.Context, evt cdcmodel.CDCEvent, pol p
 	}
 	topic := pol.TargetTopic
 	if topic == "" {
-		// yedek: orijinal topic
 		topic = evt.SourceTopic
 	}
 	return e.producer.Send(ctx, kafka.Message{
@@ -144,8 +137,6 @@ func (e *Engine) sendCoalesced(ctx context.Context, evt cdcmodel.CDCEvent, pol p
 }
 
 func (e *Engine) sendBatch(ctx context.Context, res CoalescedResult) error {
-	// batch payload formatını basit tutalım:
-	// { "table": "...", "events": [ {...}, {...} ] }
 	payload := map[string]interface{}{
 		"table":  res.Policy.Table,
 		"events": res.Events,
@@ -163,7 +154,7 @@ func (e *Engine) sendBatch(ctx context.Context, res CoalescedResult) error {
 	return e.producer.Send(ctx, kafka.Message{
 		Topic:     topic,
 		Partition: int(res.Partition),
-		Key:       nil, // batch key'i yok, consumers kendisi handle edecek
+		Key:       nil,
 		Value:     b,
 	})
 }
