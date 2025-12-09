@@ -1,0 +1,27 @@
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache ca-certificates
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /cdc-gateway ./cmd/gateway
+
+FROM alpine:3.19
+
+WORKDIR /app
+
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+
+COPY --from=builder /cdc-gateway /app/cdc-gateway
+
+ENV CDC_GATEWAY_CONFIG=/config/config.yaml
+ENV CDC_GATEWAY_GRPC_ADDR=":9090"
+
+EXPOSE 8080 9090
+
+ENTRYPOINT ["/app/cdc-gateway"]

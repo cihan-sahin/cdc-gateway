@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package cdcgateway.v1;
+
+// BURASI: Go kodu hangi module path'e ait olacak?
+// go.mod'daki module ile aynı prefix olmalı:
+option go_package = "github.com/cihan-sahin/cdc-gateway/gen/cdcgateway/v1;cdcv1";
+
+service PolicyService {
+  rpc ListPolicies (ListPoliciesRequest) returns (ListPoliciesResponse);
+  rpc UpsertPolicy (UpsertPolicyRequest) returns (UpsertPolicyResponse);
+  rpc DeletePolicy (DeletePolicyRequest) returns (DeletePolicyResponse);
+}
+
+message Policy {
+  string table = 1;
+  string mode = 2;
+  int32 window_ms = 3;
+  int32 max_batch_size = 4;
+  string merge_strategy = 5;
+  string target_topic = 6;
+  bool enabled = 7;
+}
+
+message ListPoliciesRequest {}
+message ListPoliciesResponse {
+  repeated Policy policies = 1;
+}
+
+message UpsertPolicyRequest {
+  Policy policy = 1;
+}
+message UpsertPolicyResponse {}
+
+message DeletePolicyRequest {
+  string table = 1;
+}
+message DeletePolicyResponse {}

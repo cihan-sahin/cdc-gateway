@@ -1,0 +1,44 @@
+app:
+  name: "cdc-gateway"
+  env: "dev"
+  http_addr: ":8080"
+
+kafka:
+  brokers:
+    - "localhost:9092"
+  input_topic: "dbserver1.inventory.customers"
+  consumer_group: "cdc-gateway-dev"
+  # ileride ekleriz: sasl, tls vs.
+
+policies:
+  - table: "inventory.customers"
+    mode: "last_state"
+    window_ms: 200
+    max_batch_size: 50
+    merge_strategy: "replace"
+    target_topic: "inventory.customers.optimized"
+    enabled: true
+    conditions:
+      - field: "status"
+        op: "eq"
+        value: "ACTIVE"
+
+  - table: "inventory.orders"
+    mode: "passthrough"
+    window_ms: 0
+    max_batch_size: 0
+    merge_strategy: "replace"
+    target_topic: "inventory.orders.raw"
+    enabled: true
+  
+  - table: "inventory.device_metrics"
+    mode: "micro_batch"
+    window_ms: 200
+    max_batch_size: 20
+    merge_strategy: "replace"    # micro_batch'te şu an kullanılmıyor ama future-proof
+    target_topic: "inventory.device_metrics.batched"
+    enabled: true
+    conditions:
+      - field: "type"
+        op: "eq"
+        value: "SNMP_POLL"
