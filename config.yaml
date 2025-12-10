@@ -10,7 +10,7 @@ kafka:
   consumer_group: "cdc-gateway-dev"
 
 policies:
-  - table: "inventory.customers"
+  - table: "dbserver1.inventory.customers"
     mode: "last_state"
     window_ms: 200
     max_batch_size: 50
@@ -22,7 +22,7 @@ policies:
         op: "eq"
         value: "ACTIVE"
 
-  - table: "inventory.orders"
+  - table: "dbserver1.inventory.orders"
     mode: "passthrough"
     window_ms: 0
     max_batch_size: 0
@@ -30,7 +30,7 @@ policies:
     target_topic: "inventory.orders.raw"
     enabled: true
   
-  - table: "inventory.device_metrics"
+  - table: "dbserver1.inventory.device_metrics"
     mode: "micro_batch"
     window_ms: 200
     max_batch_size: 20

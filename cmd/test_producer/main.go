@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -31,9 +32,12 @@ type debeziumEnvelope struct {
 }
 
 func main() {
-	brokerFlag := flag.String("broker", "", "Kafka broker address (e.g. localhost:9092 or kafka:9092)")
-	topicFlag := flag.String("topic", "", "Kafka topic to produce to")
-	countFlag := flag.Int("count", 10, "Number of messages to produce")
+	brokerFlag := flag.String("broker", "kafka:9092", "Kafka broker address (e.g. localhost:9092 or kafka:9092)")
+	topicFlag := flag.String("topic", "dbserver1.inventory.customers", "Kafka topic to produce to")
+	countFlag := flag.Int("count", 20, "Number of messages to produce")
+	keysFlag := flag.Int("keys", 1, "Number of distinct keys (per-key coalescing test)")
+	sleepMsFlag := flag.Int("sleep-ms", 100, "Sleep in ms between messages")
+	flipStatusFlag := flag.Bool("flip-status", false, "Toggle status between ACTIVE/INACTIVE to test policy conditions")
 	flag.Parse()
 
 	broker := *brokerFlag
@@ -54,7 +58,9 @@ func main() {
 		}
 	}
 
-	log.Printf("Producing test CDC events to Kafka broker=%s topic=%s\n", broker, topic)
+	log.Printf("Producing test CDC events to Kafka broker=%s topic=%s", broker, topic)
+	log.Printf("count=%d, keys=%d, sleep_ms=%d, flip_status=%v",
+		*countFlag, *keysFlag, *sleepMsFlag, *flipStatusFlag)
 
 	w := &kafka.Writer{
 		Addr:     kafka.TCP(broker),
@@ -68,21 +74,26 @@ func main() {
 	}()
 
 	ctx := context.Background()
-
 	rand.Seed(time.Now().UnixNano())
-	key := "1"
 
 	for i := 0; i < *countFlag; i++ {
+		id := (i % *keysFlag) + 1
+		key := strconv.Itoa(id)
+
+		status := "ACTIVE"
+		if *flipStatusFlag && i%5 == 0 {
+			status = "INACTIVE"
+		}
+
 		env := debeziumEnvelope{}
 		env.Payload.Op = "u"
 		env.Payload.After = map[string]interface{}{
-			"id":     1,
-			"name":   fmt.Sprintf("User-%d", i),
-			"status": "ACTIVE",
-			"cpu":    50 + rand.Intn(50),
+			"id":     id,
+			"name":   fmt.Sprintf("User-%d", id),
+			"status": status,
 		}
-		env.Payload.Source.DB = "db"
-		env.Payload.Source.Schema = "public"
+		env.Payload.Source.DB = "dbserver1"
+		env.Payload.Source.Schema = "inventory"
 		env.Payload.Source.Table = "customers"
 
 		valueBytes, err := json.Marshal(env)
@@ -99,8 +110,10 @@ func main() {
 			log.Fatalf("failed to write message: %v", err)
 		}
 
-		log.Printf("Sent CDC event #%d for key=%s\n", i+1, key)
-		time.Sleep(100 * time.Millisecond)
+		log.Printf("Sent CDC event #%d key=%s status=%s cpu=%v",
+			i+1, key, status, env.Payload.After["cpu"])
+
+		time.Sleep(time.Duration(*sleepMsFlag) * time.Millisecond)
 	}
 
 	log.Println("Done producing test events.")

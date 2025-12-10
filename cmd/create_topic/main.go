@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	broker := flag.String("broker", "localhost:9092", "Kafka broker address")
+	broker := flag.String("broker", "kafka:9092", "Kafka broker address")
 	topic := flag.String("topic", "dbserver1.inventory.customers", "Kafka topic name")
 	partitions := flag.Int("partitions", 1, "Number of partitions")
 	replicationFactor := flag.Int("replication", 1, "Replication factor")

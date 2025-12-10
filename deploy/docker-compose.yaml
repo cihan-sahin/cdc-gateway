@@ -12,10 +12,10 @@ services:
       KAFKA_PROCESS_ROLES: "broker,controller"
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
 
-      KAFKA_LISTENERS: "INTERNAL://:29092,EXTERNAL://:9092,CONTROLLER://:9093"
-      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:29092,EXTERNAL://localhost:9092"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT"
-      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
       KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
 
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
@@ -26,7 +26,6 @@ services:
 
     volumes:
       - kafka_data:/var/lib/kafka/data
-
   cdc-gateway:
     build:
       context: ..
@@ -39,7 +38,7 @@ services:
       CDC_GATEWAY_GRPC_ADDR: ":9090"
 
       KAFKA_BROKERS: "kafka:9092"
-      KAFKA_INPUT_TOPIC: "cdc.test.customers"
+      KAFKA_INPUT_TOPIC: "dbserver1.inventory.customers"
       KAFKA_CONSUMER_GROUP: "cdc-gateway-dev"
 
     volumes:
@@ -49,6 +48,23 @@ services:
       - "8080:8080"
       - "9090:9090"
     restart: unless-stopped
+  ## For Running go scripts inside conatiner
+  # cdc-dev:
+  #   build:
+  #     context: ..
+  #     dockerfile: Dockerfile.dev
+  #   container_name: cdc-dev
+  #   depends_on:
+  #     - kafka
+  #   environment:
+  #     CDC_GATEWAY_CONFIG: /config/config.yaml
+  #     CDC_GATEWAY_GRPC_ADDR: ":9090"
+  #   volumes:
+  #     - ../config.yaml:/config/config.yaml:ro
+
+  #   stdin_open: true
+  #   tty: true
+
 
 volumes:
   kafka_data:

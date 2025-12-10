@@ -132,6 +132,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
+	log.Printf("Loaded config: kafka brokers=%v, input_topic=%s, group=%s",
+		cfg.Kafka.Brokers, cfg.Kafka.InputTopic, cfg.Kafka.ConsumerGroup)
 
 	policyStore, err := cfg.ToPolicyStore()
 	if err != nil {

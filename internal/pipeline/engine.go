@@ -31,6 +31,7 @@ func NewEngine(consumer kafka.Consumer, producer kafka.Producer, router *Router,
 }
 
 func (e *Engine) Run(ctx context.Context) error {
+	log.Printf("[ENGINE] starting consumer loop")
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -66,7 +67,7 @@ func (e *Engine) handleMessage(ctx context.Context, msg kafka.Message) error {
 
 	routed, ok := e.router.Route(evt)
 	if !ok {
-		return e.sendRaw(ctx, evt)
+		return nil
 	}
 
 	now := time.Now()
