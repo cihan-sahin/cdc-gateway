@@ -24,10 +24,10 @@ type KafkaGoConsumer struct {
 
 func NewKafkaGoConsumer(cfg KafkaGoConsumerConfig) *KafkaGoConsumer {
 	if cfg.MinBytes == 0 {
-		cfg.MinBytes = 1e3 // 1KB
+		cfg.MinBytes = 1e3
 	}
 	if cfg.MaxBytes == 0 {
-		cfg.MaxBytes = 10e6 // 10MB
+		cfg.MaxBytes = 10e6
 	}
 	if cfg.CommitIntervalSeconds == 0 {
 		cfg.CommitIntervalSeconds = 1

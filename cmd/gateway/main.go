@@ -1,4 +1,3 @@
-// cmd/gateway/main.go
 package main
 
 import (
@@ -111,7 +110,9 @@ func (a *App) StartHTTP(ctx context.Context) *http.Server {
 		<-ctx.Done()
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		_ = srv.Shutdown(shutdownCtx)
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			log.Printf("HTTP server shutdown error: %v", err)
+		}
 	}()
 
 	return srv
@@ -162,11 +163,6 @@ func main() {
 
 	engine := pipeline.NewEngine(consumer, producer, router, coalescer, m)
 
-	ctx, stop = signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
-
-	_ = app.StartHTTP(ctx)
-
 	go func() {
 		if err := engine.Run(ctx); err != nil {
 			log.Printf("engine stopped with error: %v", err)
@@ -181,5 +177,4 @@ func main() {
 
 	_ = consumer.Close()
 	_ = producer.Close()
-
 }

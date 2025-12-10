@@ -3,17 +3,19 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/segmentio/kafka-go"
 )
 
 const (
-	defaultBroker = "localhost:29092"
-	defaultTopic  = "cdc.test.customers"
+	defaultBroker = "localhost:9092"
+	defaultTopic  = "dbserver1.inventory.customers"
 )
 
 type debeziumEnvelope struct {
@@ -29,24 +31,48 @@ type debeziumEnvelope struct {
 }
 
 func main() {
-	broker := defaultBroker
-	topic := defaultTopic
+	brokerFlag := flag.String("broker", "", "Kafka broker address (e.g. localhost:9092 or kafka:9092)")
+	topicFlag := flag.String("topic", "", "Kafka topic to produce to")
+	countFlag := flag.Int("count", 10, "Number of messages to produce")
+	flag.Parse()
 
-	log.Printf("Producing test CDC events to Kafka %s topic %s\n", broker, topic)
+	broker := *brokerFlag
+	if broker == "" {
+		if env := os.Getenv("KAFKA_BROKER"); env != "" {
+			broker = env
+		} else {
+			broker = defaultBroker
+		}
+	}
+
+	topic := *topicFlag
+	if topic == "" {
+		if env := os.Getenv("KAFKA_TOPIC"); env != "" {
+			topic = env
+		} else {
+			topic = defaultTopic
+		}
+	}
+
+	log.Printf("Producing test CDC events to Kafka broker=%s topic=%s\n", broker, topic)
 
 	w := &kafka.Writer{
 		Addr:     kafka.TCP(broker),
 		Topic:    topic,
 		Balancer: &kafka.LeastBytes{},
 	}
-
-	defer w.Close()
+	defer func() {
+		if err := w.Close(); err != nil {
+			log.Printf("failed to close writer: %v", err)
+		}
+	}()
 
 	ctx := context.Background()
 
+	rand.Seed(time.Now().UnixNano())
 	key := "1"
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < *countFlag; i++ {
 		env := debeziumEnvelope{}
 		env.Payload.Op = "u"
 		env.Payload.After = map[string]interface{}{

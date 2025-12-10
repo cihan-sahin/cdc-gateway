@@ -29,12 +29,12 @@ func NewGatewayMetrics(reg prometheus.Registerer) *GatewayMetrics {
 	batchSizeHist := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name:    "cdc_gateway_batch_size",
 		Help:    "Number of events in each flushed batch",
-		Buckets: prometheus.ExponentialBuckets(1, 2, 8), // 1,2,4,...128
+		Buckets: prometheus.ExponentialBuckets(1, 2, 8),
 	})
 	flushLatencyHist := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name:    "cdc_gateway_flush_latency_seconds",
 		Help:    "Latency between first event in window and flush time",
-		Buckets: prometheus.ExponentialBuckets(0.001, 2, 10), // 1ms,2ms,... ~1s
+		Buckets: prometheus.ExponentialBuckets(0.001, 2, 10),
 	})
 
 	reg.MustRegister(mEventsIn, mEventsOut, batchSizeHist, flushLatencyHist)

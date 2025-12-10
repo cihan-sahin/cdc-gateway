@@ -15,7 +15,7 @@ func TestSimpleCoalescer_LastStateFlush(t *testing.T) {
 	pol := policy.Policy{
 		Table:         "db.public.users",
 		Mode:          policy.ModeLastState,
-		WindowMs:      100, // 100ms window
+		WindowMs:      100,
 		MaxBatchSize:  0,
 		MergeStrategy: policy.MergeReplace,
 		TargetTopic:   "users.optimized",
